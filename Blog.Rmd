@@ -59,9 +59,50 @@ master %>%
   theme(legend.title = element_blank())
 ```
 
+There has, in fact, been a fall in all types of informal childcare:
+
+```{r, echo=FALSE}
+informalcare <- c("Non-resident parent","Grandparent","Other person","Other relative")
+master %>%
+  filter(Care_Type %in% informalcare) %>%
+    select(Care_Type, Total_no_prop_2011, Total_no_prop_2014, Total_Children_Prop_No_2017) %>%
+  rename_at(vars(-Care_Type), function(x) gsub("Total_no_prop_", "", x)) %>%
+  rename(`2017` = Total_Children_Prop_No_2017) %>%
+  reshape2::melt(id.vars="Care_Type") %>%
+  ggplot(aes(Care_Type, value, fill=variable)) +
+  geom_bar(stat='identity', position=position_dodge()) +
+  xlab("") +
+  ylab("% of Australian children") +
+  scale_fill_manual(values=c("steelblue","grey","gold")) +
+  theme_minimal() +
+  theme(legend.title = element_blank(), legend.position="bottom")
+```
+
 ##Childcare and age
 
-Patterns of childcare do tend to change as children age. (Few Australian one-year-olds, for example, tend to attend before and/or after school care). 
+Patterns of childcare do tend to change as children age. (Few Australian one-year-olds, for example, tend to attend before and/or after school care). Generally, younger children tend to be more likely to attend informal care, and older children more formal types of care. Below, for example, is the care profile for 2017.
+
+```{r, echo=FALSE, warning=FALSE}
+master %>%
+  select(Care_Type, `Under 1_prop_2017`:`9–12_prop_2017`, `Under 1_no_2014`: `9–12_no_2014`, `Under 1_prop_2011`:`9–12_prop_2011`) %>%
+  filter(!grepl(paste(filterwords, collapse="|"), Care_Type)) %>%
+  rename_at(vars(-Care_Type), function(x) gsub("_prop","", x)) %>%
+  reshape2::melt(id.vars="Care_Type") %>%
+  mutate(Year = case_when(
+    str_detect(variable, "_2017")  ~ "2017",
+    str_detect(variable, "_2014") ~ "2014",
+    TRUE ~ "2011"
+  )) %>%
+  mutate(variable = gsub("_.*","",variable)) %>%
+  filter(Year=="2017") %>%
+  ggplot(aes(variable, value, color=Care_Type, group=Care_Type)) +
+  geom_line() +
+  facet_wrap(~Care_Type) +
+  guides(colour=FALSE)
+```
+
+
+
 
 
 
