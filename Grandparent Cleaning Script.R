@@ -1,6 +1,12 @@
 library(tidyverse)
 library(readxl)
 
+##Get the data year by year
+
+##--------
+##2017
+##------------
+
 ##Read in age data from ABS
 
 june2017age <- read_xls("~/Documents/GrandparentsProject/June_2017.xls", sheet=2)
