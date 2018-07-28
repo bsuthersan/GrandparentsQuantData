@@ -1,0 +1,75 @@
+---
+title: "Grandparents Quant Project"
+output: html_notebook
+---
+
+
+```{r, echo=FALSE}
+##Packages
+library(tidyverse)
+library(knitr)
+library(reshape2)
+```
+
+```{r, echo=FALSE, message=FALSE}
+##Read in the data
+master <- read_csv("Data/Master.csv")
+```
+
+In a previous life, I worked as an academic in Australia, and whilst there I completed my PhD on grandparent care.
+
+
+##Table 1: Numbers and proportions of Australian children in care by type of care, 2011-2017
+
+```{r, echo=FALSE}
+filterwords <- c("Usually","usually","Total","Type", "Formal","Informal")
+master %>%
+  select(Care_Type, Total_Children_No_No_2017, Total_Children_Prop_No_2017, Total_no_no_2014, Total_no_prop_2014, Total_no_no_2011, Total_no_prop_2011) %>%
+  filter(!grepl(paste(filterwords, collapse="|"), Care_Type)) %>%
+  rename(`Total 2017 (000s)` = Total_Children_No_No_2017,
+         `Proportion 2017` = Total_Children_Prop_No_2017,
+         `Total 2014 (000s)` = Total_no_no_2014,
+         `Proportion 2014` = Total_no_prop_2014,
+         `Total 2011 (000s)` = Total_no_no_2011,
+         `Proportion 2011` = Total_no_prop_2011,
+         `Care Type` = Care_Type) %>%
+  arrange(desc(`Total 2017 (000s)`)) %>%
+  kable()
+  
+```
+
+As seen above, in 2017 around 1 in 5 Australian children were cared for regularly by their grandparents. However, this was down from 1 in 4 children in 2011. In contrast, formal types of care, notably long day care and before and/or after school care, are both up since 2011.
+
+Indeed, breaking down the data by type of care received, we can see that the proportion of Australian children in formal care is rising over time, whilst the proporiton of kids in informal care has fallen slightly. This has occured as the proportion of Australian children _not_ in any type of care has risen by XXX between 2011 and 2017.
+
+```{r, echo=FALSE, dpi=600}
+master %>%
+  filter(grepl("Usually", Care_Type, ignore.case=TRUE)) %>%
+  filter(Care_Type!="Usually attended care") %>%
+  select(Care_Type, Total_no_prop_2011, Total_no_prop_2014, Total_Children_Prop_No_2017) %>%
+  rename_at(vars(-Care_Type), function(x) gsub("Total_no_prop_", "", x)) %>%
+  rename(`2017` = Total_Children_Prop_No_2017) %>%
+  reshape2::melt(id.vars="Care_Type") %>%
+  ggplot() +
+  aes(variable, value, group=Care_Type, color=Care_Type) +
+  geom_line() +
+  theme_minimal() +
+  ylab("% of Australian children") +
+  xlab("Year") +
+  theme(legend.title = element_blank())
+```
+
+##Childcare and age
+
+Patterns of childcare do tend to change as children age. (Few Australian one-year-olds, for example, tend to attend before and/or after school care). 
+
+
+
+
+
+
+
+
+
+
+

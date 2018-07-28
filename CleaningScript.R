@@ -159,5 +159,6 @@ finalmaster <- master2017 %>%
   left_join(master2014, by = "Care_Type") %>%
   left_join(master2011, by = "Care_Type")
 
+write.csv(finalmaster, "Data/Master.csv", row.names=F, na="")
 
 
