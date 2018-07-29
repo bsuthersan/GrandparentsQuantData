@@ -84,8 +84,9 @@ Patterns of childcare do tend to change as children age. (Few Australian one-yea
 
 ```{r, echo=FALSE, warning=FALSE}
 master %>%
-  select(Care_Type, `Under 1_prop_2017`:`9–12_prop_2017`, `Under 1_no_2014`: `9–12_no_2014`, `Under 1_prop_2011`:`9–12_prop_2011`) %>%
+  select(Care_Type, `Under 1_prop_2017`:`9–12_prop_2017`, `Under 1_prop_2014`: `9–12_prop_2014`, `Under 1_prop_2011`:`9–12_prop_2011`) %>%
   filter(!grepl(paste(filterwords, collapse="|"), Care_Type)) %>%
+  filter(Care_Type!="Occasional care") %>%
   rename_at(vars(-Care_Type), function(x) gsub("_prop","", x)) %>%
   reshape2::melt(id.vars="Care_Type") %>%
   mutate(Year = case_when(
@@ -93,13 +94,55 @@ master %>%
     str_detect(variable, "_2014") ~ "2014",
     TRUE ~ "2011"
   )) %>%
-  mutate(variable = gsub("_.*","",variable)) %>%
-  filter(Year=="2017") %>%
-  ggplot(aes(variable, value, color=Care_Type, group=Care_Type)) +
+  mutate(variable = gsub("_.*","",variable),
+         variable = gsub("Under 1", "0", variable)) %>%
+  ggplot(aes(variable, value, color=Year, group=Year)) +
   geom_line() +
   facet_wrap(~Care_Type) +
-  guides(colour=FALSE)
+  ylab("% Australian children") +
+  xlab("Age in years") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle=90)) +
+  theme(legend.title = element_blank())
 ```
+
+Long day care peaks for students at the age of 3-4, whilst grandparent care, as a proportion of all care, peaks when children are around 1. 
+
+##Hours of care
+
+However, the vast majority of grandparent care occurs for less than 10 hours a week. Let's check this out.
+
+```{r, echo=FALSE}
+master %>%
+  select(Care_Type, `Less than 5_prop_2017`:`45 or more_prop_2017`) %>%
+  filter(!grepl(paste(filterwords, collapse="|"), Care_Type)) %>%
+  filter(Care_Type!="Occasional care") %>%
+  rename_at(vars(-Care_Type), function(x) gsub("_prop_2017","", x)) %>%
+  reshape2::melt(id.vars="Care_Type") %>%
+  mutate(variable = gsub("Less than 5","0_5", variable),
+         variable = gsub("45 or more","45+", variable),
+         variable = gsub("–","_",variable)) %>%
+  mutate(variable = factor(variable, levels=c("0_5","5_9","10_19","20_29","30_34","35_39","40_44","45+"))) %>%
+ggplot(aes(variable, value, group=Care_Type, color=Care_Type)) +
+  geom_line() +
+  facet_wrap(~Care_Type) +
+  theme(legend.title = element_blank(), axis.text.x = element_text(angle=90)) +
+  xlab("Hours of care") +
+  ylab("% of Australian children") +
+  theme(legend.position = "none")
+```
+
+```{r, echo=FALSE}
+master %>%
+  select(Care_Type, `Less than 5_no_2017`:`45 or more_no_2017`) %>%
+  mutate(Total = rowSums(.[2:9])) %>%
+  kable()
+  
+```
+
+
+
+
 
 
 
